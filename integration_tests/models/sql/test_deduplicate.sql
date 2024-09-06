@@ -1,21 +1,32 @@
-with
-
-source as (
-    select *
-    from {{ ref('data_deduplicate') }}
-    where user_id = 1
-),
-
-deduped as (
+{% if target.type == 'fabric' %}
 
     {{
         dbt_utils.deduplicate(
-            'source',
+            ref('data_deduplicate') ,
             partition_by='user_id',
             order_by='version desc',
         ) | indent
     }}
 
-)
+{% else %}
 
-select * from deduped
+    with source as (
+    select *
+    from {{ ref('data_deduplicate') }}
+    where user_id = 1
+    ),
+
+    deduped as (
+
+        {{
+            dbt_utils.deduplicate(
+                'source',
+                partition_by='user_id',
+                order_by='version desc',
+            ) | indent
+        }}
+
+    )
+
+    select * from deduped
+{% endif %}

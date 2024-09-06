@@ -73,3 +73,49 @@ filtered as (
 select * from filtered
 
 {% endmacro %}
+
+
+{% macro fabric__date_spine(datepart, start_date, end_date) %}
+
+    {% set upper_bound = dbt_utils.get_intervals_between(start_date, end_date, datepart) %}
+    {% set n = dbt_utils.get_powers_of_two(upper_bound) %}
+
+    with p as (
+        select 0 as generated_number union all select 1
+    ), 
+    unioned as (
+        select
+        {% for i in range(n) %}
+        p{{i}}.generated_number * power(2, {{i}})
+        {% if not loop.last %} + {% endif %}
+        {% endfor %}
+        + 1
+        as generated_number
+        from
+        {% for i in range(n) %}
+        p as p{{i}}
+        {% if not loop.last %} cross join {% endif %}
+        {% endfor %}
+
+    ),
+    all_periods as (
+        select (
+            {{
+                dbt.dateadd(
+                    datepart,
+                    "row_number() OVER (ORDER BY (SELECT NULL))- 1",
+                    start_date
+                )
+            }}
+        ) as date_{{datepart}}
+        from unioned
+        where generated_number <= {{upper_bound}}
+    ),
+    filtered as (
+        select *
+        from all_periods
+        where date_{{datepart}} <= {{ end_date }}
+    )
+    select * from filtered
+
+{% endmacro %}

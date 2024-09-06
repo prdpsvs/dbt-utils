@@ -24,8 +24,6 @@
 {% endif %}
 
 
-
--- setup
 {%- do dbt_utils._is_relation(model, 'test_equality') -%}
 
 {# Ensure there are no extra columns in the compare_model vs model #}

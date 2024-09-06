@@ -4,7 +4,12 @@
     I once thought as you are thinking. Proceed with caution.
 #}
 
-{% set false_statement = 'select 1 as id ' ~ limit_zero() %}
+
+{% if target.type == 'fabric' %}
+    {% set false_statement = 'select 1 as id ' %}
+{% else %}
+    {% set false_statement = 'select 1 as id ' ~ limit_zero() %}
+{% endif %}
 
 with default_data as (
 

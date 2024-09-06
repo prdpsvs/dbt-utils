@@ -4,8 +4,26 @@
 
 
 integration_tests:
-  target: postgres
+  target: fabric-dev
   outputs:
+    fabric:
+      authentication: CLI
+      database: "{{ env_var('FABRIC_TEST_DBNAME') }}"
+      driver: "{{ env_var('FABRIC_TEST_DRIVER') }}"
+      host: "{{ env_var('FABRIC_TEST_HOST') }}"
+      schema: "{{ env_var('POSTGRES_DATABASE') }}"
+      threads: 4
+      trace_flag: False
+      type: fabric
+    fabric-dev:
+      authentication: CLI
+      database: dbt1.8.7
+      driver: ODBC Driver 18 for SQL Server
+      host: x6eps4xrq2xudenlfv6naeo3i4-4y7qdgocsotereunowrkeqv4ku.msit-datawarehouse.fabric.microsoft.com
+      schema: dbo
+      threads: 4
+      trace_flag: False
+      type: fabric
     postgres:
       type: "postgres"
       host: "{{ env_var('POSTGRES_HOST') }}"

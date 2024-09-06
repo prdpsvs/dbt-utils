@@ -11,6 +11,14 @@
             end as {{ adapter.quote('table_type') }}
 {% endmacro %}
 
+{% macro fabric__get_table_types_sql() %}
+            case table_type
+                when 'BASE TABLE' then 'table'
+                when 'VIEW' then 'view'
+                else lower(table_type)
+            end as {{ adapter.quote('table_type') }}
+{% endmacro %}
+
 
 {% macro postgres__get_table_types_sql() %}
             case table_type

@@ -29,6 +29,30 @@
 
 {%- endmacro -%}
 
+{%- macro fabric__deduplicate(relation, partition_by, order_by) -%}
+
+    {%- set relation_columns = fabric__get_columns_in_relation(relation) %}
+    {% set column_names %}
+        {% for row in relation_columns -%}
+            {{ row['column'] }} {%- if not loop.last%},{%- endif %}
+        {%- endfor %}
+    {% endset %}
+
+    WITH deduplicate AS (
+        select
+            _inner.*,
+            row_number() over (
+                partition by {{ partition_by }}
+                order by {{ order_by }}
+            ) as rn
+        from {{ relation }} as _inner
+    )    
+    SELECT {{column_names}} 
+    FROM deduplicate 
+    WHERE rn = 1
+
+{%- endmacro -%}
+
 -- Redshift has the `QUALIFY` syntax:
 -- https://docs.aws.amazon.com/redshift/latest/dg/r_QUALIFY_clause.html
 {% macro redshift__deduplicate(relation, partition_by, order_by) -%}
